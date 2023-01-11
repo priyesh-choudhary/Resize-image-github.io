@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>image Resizer APP-JS</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+          }
+          body {
+            width: 100%;
+            height: 100vh;
+            background-image: linear-gradient(45deg, #fbda61 0%, #ff5acd 100%);
+            place-items: center;
+            display: grid;
+          }
+          .box {
+            width: 30%;
+            height: auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 5px;
+          }
+          .uploader {
+            width: 100%;
+            height: 250px;
+            border: 2px dashed rgb(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+          }
+          
+          .box.active .uploader{border: none;}
+          
+          .uploader img {
+            transform: scale(1.4);
+          }
+          
+          .box.active .uploader img{
+            transform: scale(1);
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 5px;
+          }
+          
+          .box.active .uploader label{display: none;}
+          
+          .uploader label {
+            margin-top: 10px;
+          }
+          
+          
+          .tools {
+            width: 100%;
+            height: auto;
+            margin-top: 15px;
+            display: none;
+          }
+          
+          .box.active .tools{
+            display: block;
+          }
+          .tools .w_h {
+            width: 100%;
+            height: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          
+          .tools .w_h ._input{
+            display: flex;
+            justify-content: center;
+            align-items: left;
+            flex-direction: column;
+            width: 47.5%;
+            margin: 0 10px;
+            text-transform: capitalize;
+          }
+          ._input input{ height: 40px;
+            padding: 0 10px;
+            margin-top: 4px;
+            outline: none;
+            border: 2px solid rgba(0, 0, 0, 0.452);
+            border-radius: 4px;}
+          
+            .checked_tools {
+              margin-top: 15px;
+            }
+            
+            .checked_tools ._ratio input[type="checkbox"] {
+              transform: scale(1.1);
+            }
+            .checked_tools hr {
+              margin: 5px 0;
+              opacity: 0.3;
+            }
+            .downloadBtn {
+              width: 100%;
+              height: 50px;
+              margin-top: 20px;
+              background-image: linear-gradient(45deg, #fbda61 0%, #ff5acd 100%);
+              border: none;
+              outline: none;
+              text-transform: capitalize;
+              font-size: 1.2rem;
+              cursor: pointer;
+              border-radius: 4px;
+              color: #fff;
+            }
+          
+            /* media queries */
+          @media (max-width: 768px) {
+            .box {
+              width: 60%;
+            }
+          }
+          /* media queries */
+          @media (max-width: 1068px) {
+            .box {
+              width: 80%;
+            }
+          }
+            
+    </style>
+  </head>
+  
+  <body>
+    <div class="box">
+      <div class="uploader">
+        <input type="file" id="file" hidden />
+        <img
+          src="https://icons8.com/icon/68826/image"
+          alt="upload icon"
+        />
+        <label for="file">Browse File To Upload</label>
+      </div>
+      <div class="tools">
+        <div class="w_h">
+          <div class="_input">
+            <label for="width">Width</label>
+            <input type="number" name="" id="width">
+          </div>  
+          <div class="_input">
+            <label for="height">height</label>
+            <input type="number" name="" id="height">
+          </div>  
+        </div>
+        <div class="checked_tools">
+            <div class="_ratio">
+                <input type="checkbox" name="" id="aspect">
+                <label for="aspect">Lock Aspect Ratio</label>
+            </div>
+            <hr>
+            <div class="_ratio">
+                <input type="checkbox" name="" id="reduce">
+                <label for="reduce">Reduce Quality</label>
+            </div>
+        </div>
+        
+        <button class="downloadBtn">download image</button>
+      </div>
+    </div>
+    <script >
+        
+let uploader = document.querySelector('.uploader');
+let fileInput = document.getElementById('file');
+let imgSrc = document.querySelector('.uploader img');
+let box = document.querySelector('.box');
+let w_input = document.getElementById('width');
+let h_input = document.getElementById('height');
+let downloadBtn = document.querySelector('.downloadBtn');
+let reduce_q = document.getElementById('reduce');
+let aspect = document.getElementById('aspect');
+
+let imgageRatio;
+
+fileInput.addEventListener('change', (e) =>{
+    let file = e.target.files[0];
+    if(!file){
+        return;
+    }
+    imgSrc.src = URL.createObjectURL(file);
+    imgSrc.addEventListener('load', ()=>{
+        box.classList.add('active');
+        w_input.value = imgSrc.naturalWidth;
+        h_input.value = imgSrc.naturalHeight;
+        imgageRatio = imgSrc.naturalWidth/imgSrc.naturalHeight;
+    })
+})
+
+uploader.addEventListener('click', ()=>{
+    fileInput.click();
+});
+
+w_input.addEventListener('keyup', ()=>{
+let height = aspect.checked ? w_input.value / imgageRatio : h_input.value;
+h_input.value = Math.floor(height);
+})
+h_input.addEventListener('keyup', ()=>{
+let width = aspect.checked ? h_input.value * imgageRatio : w_input.value;
+w_input.value = Math.floor(width);
+})
+
+downloadBtn.addEventListener('click', ()=>{
+    let canvas = document.createElement('canvas');
+    let ctx = canvas.getContext('2d');
+
+    canvas.width = w_input.value;
+    canvas.height = h_input.value;
+
+    let r_q = reduce_q.checked ? 0.5 : 1.0;
+
+    ctx.drawImage(imgSrc, 0, 0, canvas.width, canvas.height);
+
+    let a = document.createElement('a');
+    a.download = new Date().getTime();
+    a.href = canvas.toDataURL('image/jpeg', r_q);
+    a.click();
+})
+    </script>
+  </body>
+</html>
